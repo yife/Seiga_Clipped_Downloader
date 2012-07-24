@@ -155,7 +155,10 @@ def main():
             file_ext = '.gif'
         elif file_ext == 'image/png':
             file_ext = '.png'
+        else:
+            file_ext = '.jpg'
 
+        print title, file_ext
         #画像ファイル書き出し
         localfile = open( './seiga_download/' + title + file_ext, 'wb')
         localfile.write(img)
