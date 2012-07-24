@@ -16,8 +16,8 @@ sys.setdefaultencoding('utf-8')
 # Constants for niconico
 SEIGA_URL_FORMAT = "http://seiga.nicovideo.jp/seiga/{seiga_id}"
 LOGIN_URL = "https://secure.nicovideo.jp/secure/login"
-MAIL_ADDR = 'artificial.fairy@gmail.com'
-PASSWORD = 'R1jBKWrMQJ1oR2Hz'
+MAIL_ADDR = 'xxxxxxxx@gmail.com'
+PASSWORD = 'xxxxxxxx'
 FETCH_LIMIT = 10
 
 
