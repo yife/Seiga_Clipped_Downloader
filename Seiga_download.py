@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import os
 import codecs
 import json
 import urllib, urllib2
@@ -17,7 +18,7 @@ sys.setdefaultencoding('utf-8')
 SEIGA_URL_FORMAT = "http://seiga.nicovideo.jp/seiga/{seiga_id}"
 LOGIN_URL = "https://secure.nicovideo.jp/secure/login"
 MAIL_ADDR = 'xxxxxxxx@gmail.com'
-PASSWORD = 'xxxxxxxx'
+PASSWORD = 'xxxxxxxxx'
 FETCH_LIMIT = 10
 
 
@@ -135,20 +136,28 @@ def main():
         #各種情報を取得し、その状況を表示しておく
         print 'Title\n----------------------'
         title = fetchTitle(crawler, link)
-        title = title + str(time.time())
+        fileTitle = title + str(time.time())
         print title
+        print '\n'
         print 'User Desc\n----------------------'
         desc = fetchDesc(crawler, link)
         print desc
+        print '\n'
         # print 'Tags\n----------------------'
         tags = fetchTags(crawler, link)
         # print tags
         print 'Downloading Image...\n----------------------'
         seiga_id = link[34:-27]
         img = fetchFullsizeImage(crawler, seiga_id)
+        print 'done!'
+        print '\n'
 
         #バイナリから画像タイプ判別
         file_ext = detect_imagetype(img)
+        print 'Filetype\n----------------------'
+        print file_ext
+        print '\n'
+
         if file_ext == 'image/jpeg':
             file_ext = '.jpg'
         elif file_ext == 'image/gif':
@@ -156,11 +165,14 @@ def main():
         elif file_ext == 'image/png':
             file_ext = '.png'
         else:
-            file_ext = '.jpg'
+            file_ext = '.unknown'
 
-        print title, file_ext
+        #書き出す先のフォルダがあるかどうか確認し、なければ作成
+        if os.path.exists("./seiga_download") == False:
+            os.mkdir('./seiga_download')
+
         #画像ファイル書き出し
-        localfile = open( './seiga_download/' + title + file_ext, 'wb')
+        localfile = open( './seiga_download/' + fileTitle + file_ext, 'wb')
         localfile.write(img)
         localfile.close()
 
@@ -168,6 +180,7 @@ def main():
         category = tags.pop(0)
         print 'Category Tag is...\n----------------------'
         print category
+        print '\n'
 
         #残ったタグを、「"タグ1", "タグ2", "タグ3"」 という文字列にする
         tags_string = ""
@@ -176,6 +189,7 @@ def main():
         tags_string = tags_string[:-1]
         print 'Tags\n----------------------'
         print tags_string
+        print '\n'
 
         #jsonファイル書き出し
         _json = {
@@ -185,7 +199,7 @@ def main():
             "category": category
         }
 
-        f = codecs.open('./seiga_download/' + title + '.json', 'w', 'utf-8')
+        f = codecs.open('./seiga_download/' + fileTitle + '.json', 'w', 'utf-8')
         json.dump(_json, f, ensure_ascii=False)
         f.close()
 
