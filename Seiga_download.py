@@ -17,8 +17,8 @@ sys.setdefaultencoding('utf-8')
 # Constants for niconico
 SEIGA_URL_FORMAT = "http://seiga.nicovideo.jp/seiga/{seiga_id}"
 LOGIN_URL = "https://secure.nicovideo.jp/secure/login"
-MAIL_ADDR = 'xxxxxxxx@gmail.com'
-PASSWORD = 'xxxxxxxxx'
+MAIL_ADDR = 'artificial.fairy@gmail.com'
+PASSWORD = 'R1jBKWrMQJ1oR2Hz'
 FETCH_LIMIT = 10
 
 
@@ -102,6 +102,15 @@ def detect_imagetype(image):
      if image[0:3]=='GIF': return 'image/gif'
      if image[1:4]=='PNG': return 'image/png'
 
+def findCategoryTag(crawler, url):
+    pageHtml = crawler.open(url).read()
+    pageSoup = BeautifulSoup(pageHtml)
+    tags = pageSoup.find('img', attrs={'src': '/img/tag/category.png'})
+    if tags is not None:
+        return tags.next.string
+    else:
+        return "カテゴリ設定なし"
+
 
 def main():
     #コマンドライン引数に、検索したいタグを入力
@@ -143,9 +152,8 @@ def main():
         desc = fetchDesc(crawler, link)
         print desc
         print '\n'
-        # print 'Tags\n----------------------'
-        tags = fetchTags(crawler, link)
-        # print tags
+    
+        
         print 'Downloading Image...\n----------------------'
         seiga_id = link[34:-27]
         img = fetchFullsizeImage(crawler, seiga_id)
@@ -168,18 +176,27 @@ def main():
             file_ext = '.unknown'
 
         #書き出す先のフォルダがあるかどうか確認し、なければ作成
-        if os.path.exists("./seiga_download") == False:
-            os.mkdir('./seiga_download')
+        if os.path.exists("./seiga_download_tmp") == False:
+            os.mkdir('./seiga_download_tmp')
 
         #画像ファイル書き出し
-        localfile = open( './seiga_download/' + fileTitle + file_ext, 'wb')
+        localfile = open( './seiga_download_tmp/' + fileTitle + file_ext, 'wb')
         localfile.write(img)
         localfile.close()
 
+        #タグを取得
+        tags = fetchTags(crawler, link)
+
+        #カテゴリタグを探す
+        categoryTag = findCategoryTag(crawler, link)
+
+        #タグの中にカテゴリタグがあれば削除
+        if categoryTag in tags:
+            tags.remove(categoryTag)
+
         #いちばん先頭のタグをカテゴリタグとして取り出す
-        category = tags.pop(0)
         print 'Category Tag is...\n----------------------'
-        print category
+        # print categoryTag
         print '\n'
 
         #残ったタグを、「"タグ1", "タグ2", "タグ3"」 という文字列にする
@@ -196,10 +213,11 @@ def main():
             "title": title,
             "tags": tags_string,
             "description": desc,
-            "category": category
+            "category": categoryTag,
+            "filename": fileTitle + file_ext
         }
 
-        f = codecs.open('./seiga_download/' + fileTitle + '.json', 'w', 'utf-8')
+        f = codecs.open('./seiga_download_tmp/' + fileTitle + '.json', 'w', 'utf-8')
         json.dump(_json, f, ensure_ascii=False)
         f.close()
 
